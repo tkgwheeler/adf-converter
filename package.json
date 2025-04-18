@@ -7,10 +7,32 @@
     "test": "jest",
     "build": "tsc"
   },
-  "keywords": [],
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tkgwheeler/adf-converter.git"
+  },
+  "keywords": [
+    "adf",
+    "atlassian",
+    "document",
+    "format",
+    "markdown",
+    "md",
+    "converter",
+    "json"
+  ],
   "author": "Thomas Wheeler",
   "license": "MIT",
-  "description": "",
+  "bugs": {
+    "url": "https://github.com/tkgwheeler/adf-converter/issues"
+  },
+  "homepage": "https://github.com/tkgwheeler/adf-converter",
+  "description": "A utility to convert Atlassian Document Format (ADF) JSON to other formats like Markdown.",
   "devDependencies": {
     "@types/jest": "^29.5.14",
     "@types/node": "^22.14.1",
