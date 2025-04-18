@@ -1,0 +1,19 @@
+// tsconfig.json
+{
+    "compilerOptions": {
+      "target": "ES2022", 
+      "module": "CommonJS",
+      "moduleResolution": "node",
+      "outDir": "./dist", // Where compiled JavaScript will go
+      "rootDir": "./src", // Where your TypeScript source code lives
+      "strict": true, // Enable all strict type-checking options (recommended)
+      "esModuleInterop": true, // Allows default imports from CommonJS modules
+      "skipLibCheck": true, // Skip type checking of declaration files (speeds up compilation)
+      "forceConsistentCasingInFileNames": true, // Disallow inconsistently-cased references
+      "resolveJsonModule": true, // Allows importing JSON files
+      "declaration": true, // Generate corresponding '.d.ts' definition files
+      "sourceMap": true, // Generate sourcemaps for debugging
+    },
+    "include": ["src/**/*"], // Which files to include in compilation
+    "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"] // Exclude tests from main build
+  }
