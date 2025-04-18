@@ -5,9 +5,9 @@ import { ConversionContext, Formatter, MarkMapper, NodeMapper } from "./types";
 function escapeMarkdown(text: string): string {
     if (!text) return '';
     text = text.replace(/\\/g, '\\\\'); // Escape backslashes first
-    // Escape markdown characters: `*_{}[]()#+-.!|~>` (escape > for blockquotes)
+    // Escape markdown characters: `*_{}[]()#+-!|~>` (escape > for blockquotes)
     // Note: Don't escape backticks within code spans/blocks - handled separately.
-    text = text.replace(/([*_~`[\]()#+\-.!|>])/g, '\\$1');
+    text = text.replace(/([*_~`[\]()#+\-!|>])/g, '\\$1'); 
     return text;
   }
   
@@ -20,9 +20,10 @@ function escapeMarkdown(text: string): string {
   };
   
   const markdownNodeMappers: { [nodeType: string]: NodeMapper<string> | undefined } = {
-      doc: (_node, processChildren, context) => {
-          return processChildren(context).join('').trim() + '\n';
-      },
+    doc: (_node, processChildren, context) => {
+        // Join children results. Let block elements manage their own trailing newlines.
+        return processChildren(context).join('');
+    },
   
       paragraph: (_node, processChildren, context) => {
           return processChildren(context).join('') + '\n\n';
@@ -54,6 +55,7 @@ function escapeMarkdown(text: string): string {
   
       listItem: (node, processChildren, context, siblingIndex) => {
           const indent = '  '.repeat(context.listItemLevel ?? 0);
+          const nestedIndent = '  '.repeat((context.listItemLevel ?? 0) + 1); // Indent for nested list
           let itemPrefix = '* ';
           if (context.listType === 'ordered') {
               // Use siblingIndex + 1 for numbering (adjust if list attrs.order is present)
@@ -61,20 +63,19 @@ function escapeMarkdown(text: string): string {
           }
   
           // Process content of the list item.
-          // Reset list context for elements *inside* the list item,
-          // but keep track of the current level for potential nested lists.
           const contentContext: ConversionContext = { listItemLevel: context.listItemLevel };
-          const contentMarkdown = processChildren(contentContext).join('');
+          let contentMarkdown = processChildren(contentContext).join('');
   
-          // Remove paragraph spacing if a paragraph is the only child, common case
-          const trimmedContent = contentMarkdown.replace(/^\s+|\s+$/g, ''); // Trim ends aggressively
-                                          // .replace(/\n\n$/, '\n'); // Reduce trailing space, tricky
+          // Replace the double newline from a paragraph if it's immediately followed by a nested list item
+          // This regex matches \n\n followed by the nested indentation and a list marker (* or number.)
+          const pattern = new RegExp(`\\n\\n(${nestedIndent}[*]|${nestedIndent}\\d+\\.)`);
+          contentMarkdown = contentMarkdown.replace(pattern, '\n$1');
   
-          // Ensure nested lists start on a new line if preceded by text
-          const formattedContent = trimmedContent.replace(/(\S)\n([*#>`\d])/, '$1\n\n$2'); // Add space before nested lists/blocks if needed
+          // Trim residual leading/trailing whitespace from the whole content block
+          // This helps clean up, e.g., if a paragraph was the only content.
+          const finalContent = contentMarkdown.trim();
   
-  
-          return `${indent}${itemPrefix}${formattedContent}\n`;
+          return `${indent}${itemPrefix}${finalContent}\n`;
       },
   
       blockquote: (_node, processChildren, context) => {
